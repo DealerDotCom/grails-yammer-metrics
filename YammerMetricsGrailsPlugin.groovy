@@ -1,9 +1,9 @@
 /*
  * Copyright 2012 Jeff Ellis
  */
-class YammerMetricsGrailsPlugin {
+class YammerMetricsGrailsPlugin{
 
-	// the plugin version
+    // the plugin version
     def version = "2.1.2-2"
     // the version or versions of Grails the plugin is designed for
     def grailsVersion = "2.0.3 > *"
@@ -16,7 +16,7 @@ class YammerMetricsGrailsPlugin {
     ]
 
     // TODO Fill in these fields
-    def author = "Jeff Ellis"
+    def author = "Jeff Ellis, Ellery Crane"
     def authorEmail = "codemonkey@ellises.us"
     def title = "Grails plugin to package Coda Hale's yammer metrics jars"
     def description = '''\\
@@ -34,9 +34,9 @@ http://metrics.codahale.com/index.html
 
     def doWithWebDescriptor = { xml ->
 
-        if(application.config.metrics.servletEnabled!=false){
+        if(application.config.metrics.servletEnabled != false){
             def count = xml.'servlet'.size()
-            if(count > 0) {
+            if(count > 0){
 
                 def servletElement = xml.'servlet'[count - 1]
 
@@ -50,7 +50,7 @@ http://metrics.codahale.com/index.html
             }
 
             count = xml.'servlet-mapping'.size()
-            if(count > 0) {
+            if(count > 0){
                 def servletMappingElement = xml.'servlet-mapping'[count - 1]
                 servletMappingElement + {
 
@@ -61,13 +61,29 @@ http://metrics.codahale.com/index.html
                 }
                 println "YammerMetrics Admin servlet filter-mapping (for /metrics/*) injected into web.xml\n***"
             }
-        } else{
+        } else {
             println "Skipping YammerMetrics Admin servlet mapping\n***"
         }
     }
 
     def doWithSpring = {
-        // TODO Implement runtime spring config (optional)
+        xmlns aop: "http://www.springframework.org/schema/aop"
+        customScopeConfigurer(org.springframework.beans.factory.config.CustomScopeConfigurer) {
+            scopes = [
+                    thread: org.springframework.context.support.SimpleThreadScope
+            ]
+        }
+        stopWatchHolder(com.yammer.metrics.context.StopWatchHolder) { bean ->
+            bean.scope = 'thread'
+            aop.'scoped-proxy'()
+        }
+        requestStopWatchManager(com.yammer.metrics.context.RequestStopWatchManager) { bean ->
+            bean.scope = 'request'
+            bean.initMethod = 'init'
+            bean.destroyMethod = 'destroy'
+            bean.autowire = 'byName'
+            aop.'scoped-proxy'()
+        }
     }
 
     def doWithDynamicMethods = { ctx ->
