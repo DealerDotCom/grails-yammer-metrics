@@ -1,8 +1,6 @@
 /*
  * Copyright 2012 Jeff Ellis
  */
-private String jacksonVersion = '1.8.2'
-private String slf4jVersion = '1.5.8'
 
 private List<String> globalExcludes = [
         'slf4j',
@@ -45,11 +43,16 @@ grails.project.test.reports.dir = "target/test-reports"
 yammermetrics.version = "2.1.2"
 
 grails.project.dependency.resolution = {
+    useOrigin(true)
+
     // inherit Grails' default dependencies
     inherits("global") {
         // uncomment to disable ehcache
         // excludes 'ehcache'
     }
+
+
+
     log "warn" // log level of Ivy resolver, either 'error', 'warn', 'info', 'debug' or 'verbose'
 
     repositories {
@@ -80,7 +83,10 @@ grails.project.dependency.resolution = {
         compile("com.yammer.metrics:metrics-core:${yammermetrics.version}") {
             excludes(addGlobalExcludes())
         }
-        compile("com.yammer.metrics:metrics-servlet:${yammermetrics.version}"){
+        compile("com.yammer.metrics:metrics-servlet:${yammermetrics.version}") {
+            excludes(addGlobalExcludes())
+        }
+        compile("com.yammer.metrics:metrics-graphite:${yammermetrics.version}") {
             excludes(addGlobalExcludes())
         }
 

@@ -2,7 +2,7 @@ package com.yammer.metrics
 
 import grails.test.*
 
-class RequestStopWatchFiltersTests extends GrailsUnitTestCase {
+class RequestProfilingFiltersTests extends GrailsUnitTestCase {
     protected void setUp() {
         super.setUp()
     }

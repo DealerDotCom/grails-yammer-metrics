@@ -33,8 +33,8 @@ http://metrics.codahale.com/index.html
     def documentation = "http://github.com/jeffellis/grails-yammer-metrics"
 
     def doWithWebDescriptor = { xml ->
-
-        if(application.config.metrics.servletEnabled != false){
+        if(application.config.metrics.enabled != false){
+            println("#### YammerMetrics are ENABLED ####")
             def count = xml.'servlet'.size()
             if(count > 0){
 
@@ -46,7 +46,7 @@ http://metrics.codahale.com/index.html
                         'servlet-class'("com.yammer.metrics.reporting.AdminServlet")
                     }
                 }
-                println "***\nYammerMetrics servlet injected into web.xml"
+                println "YammerMetrics servlet injected into web.xml"
             }
 
             count = xml.'servlet-mapping'.size()
@@ -59,10 +59,11 @@ http://metrics.codahale.com/index.html
                         'url-pattern'("/metrics/*")
                     }
                 }
-                println "YammerMetrics Admin servlet filter-mapping (for /metrics/*) injected into web.xml\n***"
+                println "YammerMetrics Admin servlet filter-mapping (for /metrics/*) injected into web.xml"
             }
+            println("###################################")
         } else {
-            println "Skipping YammerMetrics Admin servlet mapping\n***"
+            println("#### YammerMetrics are DISABLED ####")
         }
     }
 
@@ -83,6 +84,13 @@ http://metrics.codahale.com/index.html
             bean.destroyMethod = 'destroy'
             bean.autowire = 'byName'
             aop.'scoped-proxy'()
+        }
+        if(application.config.metrics.graphite.host && application.config.metrics.graphite.port && application.config.metrics.graphite.prefix){
+            graphiteReporter(com.yammer.metrics.reporting.FilterableGraphiteReporter, application.config.metrics.graphite.host, application.config.metrics.graphite.port, application.config.metrics.graphite.prefix) {bean ->
+                bean.initMethod = 'init'
+            }
+        } else {
+            println "Configuration not found for YammerMetrics graphite reporter; skipping initialization"
         }
     }
 
