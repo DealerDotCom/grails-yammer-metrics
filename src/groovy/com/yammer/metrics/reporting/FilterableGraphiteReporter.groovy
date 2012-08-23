@@ -11,9 +11,12 @@ import org.apache.commons.logging.Log
 import org.apache.commons.logging.LogFactory
 
 import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
+import org.springframework.util.AntPathMatcher
 
 class FilterableGraphiteReporter extends GraphiteReporter{
     private static final Log LOG = LogFactory.getLog(FilterableGraphiteReporter)
+
+    protected final AntPathMatcher matcher = new AntPathMatcher()
 
     /**
      * Enables the graphite reporter to send data for the default metrics registry to graphite
@@ -137,6 +140,7 @@ class FilterableGraphiteReporter extends GraphiteReporter{
 
     void init(){
         try{
+            matcher.setPathSeparator('.') // we use periods as the path separator
             TimeUnit timeUnit = CH?.config?.metrics?.graphite?.timeUnit ? TimeUnit.valueOf(CH?.config?.metrics?.graphite?.timeUnit) : TimeUnit.MINUTES
             long period = CH?.config?.metrics?.graphite?.period ?: 1
             start(period, timeUnit)
@@ -176,19 +180,19 @@ class FilterableGraphiteReporter extends GraphiteReporter{
         return rewriteCache.get(fullName)
     }
 
-    private static final Set<String> DEFAULT_WHITELIST = ['request.1MinuteRate', 'request.mean']
+    private static final Set<String> DEFAULT_WHITELIST = ['**.request.1MinuteRate', '**.request.mean']
     private static final Set<String> DEFAULT_DETAILED_WHITELIST = [
-            'request.1MinuteRate',
-            'request.mean',
-            'request.median',
-            'request.max',
-            'request.stddev',
-            'meanPercentageOfRequestTime',
-            'invocationRatio'
+            '**.request.1MinuteRate',
+            '**.request.mean',
+            '**.request.median',
+            '**.request.max',
+            '**.request.stddev',
+            '**.meanPercentageOfRequestTime',
+            '**.invocationRatio'
     ]
 
     protected Boolean isBlacklisted(String graphiteName){
-        return startsWithAny(graphiteName, getBlacklist())
+        return matchesAnyPattern(graphiteName, getBlacklist())
     }
 
     protected Collection<String> getBlacklist(){
@@ -208,15 +212,11 @@ class FilterableGraphiteReporter extends GraphiteReporter{
     }
 
     protected Boolean useDetailedWhitelist(String graphiteName){
-        return startsWithAny(graphiteName, getDetailedPrefixes())
+        return matchesAnyPattern(graphiteName, getDetailedPrefixes())
     }
 
-    private Boolean startsWithAny(String graphiteName, Collection<String> prefixes){
-        return prefixes?.any {String prefixString -> graphiteName?.startsWith(prefixString)}
-    }
-
-    private Boolean endsWithAny(String graphiteName, Collection<String> suffixes){
-        return suffixes?.any {String suffixString -> graphiteName?.endsWith(suffixString)}
+    private Boolean matchesAnyPattern(String graphiteName, Collection<String> patterns){
+        return patterns?.any {String prefixString -> matcher.match(prefixString, graphiteName)}
     }
 
     /**
@@ -226,7 +226,7 @@ class FilterableGraphiteReporter extends GraphiteReporter{
      */
     protected Boolean shouldSend(String graphiteName){
         return !isBlacklisted(graphiteName) &&
-                endsWithAny(graphiteName, useDetailedWhitelist(graphiteName) ? getDetailedWhitelist() : getWhitelist())
+                matchesAnyPattern(graphiteName, useDetailedWhitelist(graphiteName) ? getDetailedWhitelist() : getWhitelist())
     }
 
     @Override

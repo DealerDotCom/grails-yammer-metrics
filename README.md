@@ -154,7 +154,7 @@ metrics {
     }
     graphite {
         enabled = true // if false, no reporting to graphite will occur
-        host = 'http:graphite.example.com' // the host of the graphite server to publish to
+        host = 'graphite.example.com' // the host of the graphite server to publish to
         port = 2003 // the port of the graphite server to publish to
         prefix = 'com.example.application' // the prefix to use for all metrics published to the graphite server
         period = 1  // period to use in conjunction with the timeUnit config value to control how frequently data is reported to graphite
@@ -169,8 +169,8 @@ metrics {
             detailed {
                 qualifyingPatterns = ['book.show.**', 'author.**'] // metrics that match these patterns will use the 'detailed.whitelist' filter instead of the
                 whitelist = [                                      // regular whitelist filter. This allows you to specify particular controller/actions
-                        '**.request.1MinuteRate',                     // that you want additional reporting on without needing to spam graphite with all metrics
-                        '**.request.mean',
+                        '**.request.1MinuteRate',                  // that you want additional reporting on without needing to spam graphite with more metrics
+                        '**.request.mean',                         // for everything
                         '**.request.median',
                         '**.request.max',
                         '**.request.stddev',
