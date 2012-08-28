@@ -93,8 +93,8 @@ class MetricsConfigService{
     }
 
     @ManagedAttribute(description = "Patterns that metric names must START with in order to be considered 'detailed' metrics; additional reporting for these metrics will occur")
-    List<String> getDetailedPrefixes(){
-        return CH?.config?.metrics?.graphite?.filters?.detailed?.prefixes
+    List<String> getDetailedQualifyingPatterns(){
+        return CH?.config?.metrics?.graphite?.filters?.detailed?.qualifyingPatterns
     }
 
     @ManagedAttribute(description = "Patterns that metric names must END with in order to be published; used only for detailed metrics")
@@ -102,23 +102,23 @@ class MetricsConfigService{
         return CH?.config?.metrics?.graphite?.filters?.detailed?.whitelist
     }
 
-    @ManagedOperation(description = "Adds a new 'detailed' prefix pattern. Metrics beginning with this pattern will log additional info.")
+    @ManagedOperation(description = "Adds a new 'detailed' qualifying pattern. Metrics matching this pattern will report additional info.")
     @ManagedOperationParameters([
-    @ManagedOperationParameter(name = "detailedPrefix", description = "The prefix that metrics should match to enable detailed metrics reporting"),
+    @ManagedOperationParameter(name = "pattern", description = "The pattern that metrics should match to enable detailed metrics reporting"),
     ])
-    void addDetailedPrefix(String detailedPrefix){
-        if(!CH?.config?.metrics?.graphite?.filters?.detailed?.prefixes?.contains(detailedPrefix)){
-            CH?.config?.metrics?.graphite?.filters?.detailed?.prefixes?.add(detailedPrefix)
+    void addDetailedQualifyingPattern(String pattern){
+        if(!CH?.config?.metrics?.graphite?.filters?.detailed?.qualifyingPatterns?.contains(pattern)){
+            CH?.config?.metrics?.graphite?.filters?.detailed?.qualifyingPatterns?.add(pattern)
         }
     }
 
-    @ManagedOperation(description = "Removes a 'detailed' prefix pattern from the configuration. Metrics beginning with this pattern will no longer log additional info.")
+    @ManagedOperation(description = "Removes a 'detailed' qualifying pattern from the configuration. Metrics matching this pattern will no longer report additional info.")
     @ManagedOperationParameters([
-    @ManagedOperationParameter(name = "detailedPrefix", description = "The prefix that metrics should match to enable detailed metrics reporting"),
+    @ManagedOperationParameter(name = "pattern", description = "The pattern that metrics should match to enable detailed metrics reporting"),
     ])
-    void removeDetailedPrefix(String detailedPrefix){
-        if(CH?.config?.metrics?.graphite?.filters?.detailed?.prefixes?.contains(detailedPrefix)){
-            CH?.config?.metrics?.graphite?.filters?.detailed?.prefixes?.removeAll(detailedPrefix)
+    void removeDetailedQualifyingPattern(String pattern){
+        if(CH?.config?.metrics?.graphite?.filters?.detailed?.qualifyingPatterns?.contains(pattern)){
+            CH?.config?.metrics?.graphite?.filters?.detailed?.qualifyingPatterns?.removeAll(pattern)
         }
     }
 

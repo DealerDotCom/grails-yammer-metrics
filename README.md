@@ -139,7 +139,12 @@ This plugin extends the com.yammer.metrics.reporting.GraphiteReporter to allow f
 Based on properties in the application's Config.groovy, a GraphiteReporter instance will be initialized on app startup to publish metrics that match
 various user configured criteria.  Explanations of these config properties and their effects are detailed below, in an example Config.groovy file.
 
-Much of the graphite filtering rules and metrics generation can be configured at runtime by the use of a plugin-created MBean: com.yammer.metrics.MetricsConfigService
+Much of the graphite filtering rules and metrics generation can be configured at runtime by the use of a plugin-created MBean:
+
+```
+com.yammer.metrics.MetricsConfigService
+```
+
 This allows you to disable reporting, tweak what metrics are reported and so on by using the Mbean attributes and managed operations.
 
 

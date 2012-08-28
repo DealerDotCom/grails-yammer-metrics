@@ -2,6 +2,8 @@
  * Copyright 2012 Jeff Ellis
  */
 
+private String profile = System.getProperty("profile", "dev")
+
 private List<String> globalExcludes = [
         'slf4j',
         'slf4j-api',
@@ -74,6 +76,9 @@ grails.project.dependency.resolution = {
 //		build ':release:2.0.3', {
 //            export = false
 //        }
+        build(":release:1.0.0.RC3") {
+            export = false
+        }
 
     }
 
@@ -92,3 +97,22 @@ grails.project.dependency.resolution = {
 
     }
 }
+
+def getDefaultDeployRepo(profileName){
+    switch(profileName){
+        case 'dev':
+            return 'ddcDevelopment'
+        case 'qa':
+            return 'ddcQa'
+        case 'production':
+            return 'ddcReleases'
+    }
+    return null
+}
+
+grails.project.repos.ddcDevelopment.url = "http://maven.dev.dealer.ddc/content/repositories/development"
+grails.project.repos.ddcQa.url = "http://maven.dev.dealer.ddc/content/repositories/candidate/"
+grails.project.repos.ddcReleases.url = "http://maven.dev.dealer.ddc/content/repositories/releases"
+grails.project.repos.ddcSnapshots.url = "http://maven.dev.dealer.ddc/content/repositories/snapshots"
+grails.project.repos.default = getDefaultDeployRepo(profile)
+grails.release.scm.enabled = false

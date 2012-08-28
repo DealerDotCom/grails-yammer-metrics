@@ -156,7 +156,7 @@ class FilterableGraphiteReporter extends GraphiteReporter{
             printList(getBlacklist(), "blacklist", 1)
             printList(getWhitelist(), "whitelist", 1)
             println(indent(1) + 'detailed:')
-            printList(getDetailedPrefixes(), "prefixes", 2)
+            printList(getDetailedQualifyingPatterns(), "qualifyingPatterns", 2)
             printList(getDetailedWhitelist(), "whitelist", 2)
             println("#########################################################")
             println()
@@ -207,12 +207,12 @@ class FilterableGraphiteReporter extends GraphiteReporter{
         return CH?.config?.metrics?.graphite?.filters?.detailed?.whitelist ?: DEFAULT_DETAILED_WHITELIST
     }
 
-    protected Collection<String> getDetailedPrefixes(){
-        return CH?.config?.metrics?.graphite?.filters?.detailed?.prefixes ?: []
+    protected Collection<String> getDetailedQualifyingPatterns(){
+        return CH?.config?.metrics?.graphite?.filters?.detailed?.qualifyingPatterns ?: []
     }
 
     protected Boolean useDetailedWhitelist(String graphiteName){
-        return matchesAnyPattern(graphiteName, getDetailedPrefixes())
+        return matchesAnyPattern(graphiteName, getDetailedQualifyingPatterns())
     }
 
     private Boolean matchesAnyPattern(String graphiteName, Collection<String> patterns){

@@ -4,9 +4,9 @@
 class YammerMetricsGrailsPlugin{
 
     // the plugin version
-    def version = "2.1.2-2"
+    def version = "2.1.2-2-DDC-SNAPSHOT"
     // the version or versions of Grails the plugin is designed for
-    def grailsVersion = "2.0.3 > *"
+    def grailsVersion = "1.3.6 > *"
     // the other plugins this plugin depends on
     def dependsOn = [:]
     // resources that are excluded from plugin packaging
