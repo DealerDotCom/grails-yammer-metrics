@@ -8,8 +8,14 @@ import com.yammer.metrics.core.Meter
 import com.yammer.metrics.Metrics
 import com.yammer.metrics.core.MetricName
 import com.yammer.metrics.util.RatioGauge
+import org.apache.commons.logging.Log
+import org.apache.commons.logging.LogFactory
 
 class ContextualStopWatch implements StopWatch{
+    private static final Log log = LogFactory.getLog(ContextualStopWatch)
+    private static final String DEFAULT_GROUP_NAME = 'DEFAULT'
+    private static final String DEFAULT_TYPE_NAME = 'DEFAULT'
+
     final String group
     final String type
     private final Clock clock
@@ -19,8 +25,8 @@ class ContextualStopWatch implements StopWatch{
     TaskTimingInfo contextTimingInfo
 
     ContextualStopWatch(String groupName, String typeName){
-        group = groupName
-        type = typeName
+        group = groupName ?: DEFAULT_GROUP_NAME
+        type = typeName ?: DEFAULT_TYPE_NAME
         clock = Clock.defaultClock()
         tasks = [:]
         contextTimingInfo = new TaskTimingInfo(clock.tick())
@@ -39,30 +45,33 @@ class ContextualStopWatch implements StopWatch{
         if(tasks.containsKey(taskName)){
             tasks.get(taskName).stop(clock.tick())
         } else {
-            throw new IllegalArgumentException("No task named $taskName is running") //TODO: squelch? do we want to throw an exception for timing info?
+            log?.error("No task named $taskName is running".toString())
         }
     }
 
 
     void finish(){
-        Long stopTime = clock.tick()
-        contextTimingInfo.stop(stopTime)
-        tasks.values().each {TaskTimingInfo taskTimingInfo ->
-            taskTimingInfo.stopIfRunning(stopTime)
-        }
-        Long contextTime = contextTimingInfo.getTotalTime()
-        Timer contextTimer = getTimer()
-        contextTimer.update(contextTime, TimeUnit.NANOSECONDS)
+        try{
+            Long stopTime = clock.tick()
+            contextTimingInfo.stop(stopTime)
+            tasks.values().each {TaskTimingInfo taskTimingInfo ->
+                taskTimingInfo.stopIfRunning(stopTime)
+            }
+            Long contextTime = contextTimingInfo.getTotalTime()
+            Timer contextTimer = getTimer()
+            contextTimer.update(contextTime, TimeUnit.NANOSECONDS)
 
-        tasks.each {String taskName, TaskTimingInfo taskTimingInfo ->
-            Histogram ratioHistogram = getTaskTimingRatioHistogram(taskName)
-            Integer percentage = contextTime == 0I ? -1I : (Integer) (100L * taskTimingInfo.getTotalTime() / contextTime)
-            ratioHistogram.update(percentage)
-            Meter taskMeter = getTaskMeter(taskName)
-            taskMeter.mark(taskTimingInfo.count)
-            makeTaskInvocationRatioGauge(taskName, contextTimer, taskMeter)
+            tasks.each {String taskName, TaskTimingInfo taskTimingInfo ->
+                Histogram ratioHistogram = getTaskTimingRatioHistogram(taskName)
+                Integer percentage = contextTime == 0I ? -1I : (Integer) (100L * taskTimingInfo.getTotalTime() / contextTime)
+                ratioHistogram.update(percentage)
+                Meter taskMeter = getTaskMeter(taskName)
+                taskMeter.mark(taskTimingInfo.count)
+                makeTaskInvocationRatioGauge(taskName, contextTimer, taskMeter)
+            }
+        } catch(Exception e){
+            log?.error("Exception encountering when trying to execute finish() method with group: $group and type: $type:".toString(), e)
         }
-
     }
 
     private Timer getTimer(){
