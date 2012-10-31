@@ -1,10 +1,10 @@
 /*
- * Copyright 2012 Jeff Ellis
- */
+* Copyright 2012 Jeff Ellis / Ellery Crane
+*/
 class YammerMetricsGrailsPlugin{
 
     // the plugin version
-    def version = "2.1.2-2-DDC-SNAPSHOT"
+    def version = "2.1.2-3-DDC"
     // the version or versions of Grails the plugin is designed for
     def grailsVersion = "1.3.6 > *"
     // the other plugins this plugin depends on
@@ -15,9 +15,8 @@ class YammerMetricsGrailsPlugin{
             "web-app/**"
     ]
 
-    // TODO Fill in these fields
-    def author = "Jeff Ellis, Ellery Crane"
-    def authorEmail = "codemonkey@ellises.us"
+    def author = "Ellery Crane, Jeff Ellis"
+    def authorEmail = "ellery.crane@dealer.com, codemonkey@ellises.us"
     def title = "Grails plugin to package Coda Hale's yammer metrics jars"
     def description = '''\\
 Provides the following features:
@@ -33,7 +32,8 @@ http://metrics.codahale.com/index.html
     def documentation = "http://github.com/jeffellis/grails-yammer-metrics"
 
     def doWithWebDescriptor = { xml ->
-        if(application.config.metrics.enabled != false){
+        Boolean metricsEnabled = Boolean.parseBoolean(System.getProperty('metrics.enabled', 'false')) || application.config.metrics.enabled != false
+        if(metricsEnabled){
             println("#### YammerMetrics are ENABLED ####")
             def count = xml.'servlet'.size()
             if(count > 0){
