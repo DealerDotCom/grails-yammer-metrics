@@ -1,14 +1,17 @@
+import com.yammer.metrics.http.CountingFilter
 /*
 * Copyright 2012 Jeff Ellis / Ellery Crane
 */
 class YammerMetricsGrailsPlugin{
 
     // the plugin version
-    def version = "2.1.2-4-DDC"
+    def version = "2.1.2-4-DDC-BINARY"
     // the version or versions of Grails the plugin is designed for
-    def grailsVersion = "1.3.6 > *"
+    def grailsVersion = "2.1.1 > *"
     // the other plugins this plugin depends on
     def dependsOn = [:]
+    // the other plugins to load before loading this one
+    //def loadAfter = ['controllers']
     // resources that are excluded from plugin packaging
     def pluginExcludes = [
             "grails-app/views",
@@ -30,6 +33,12 @@ http://metrics.codahale.com/index.html
 
     // URL to the plugin's documentation
     def documentation = "http://github.com/jeffellis/grails-yammer-metrics"
+
+    // make sure the response size counting filter is BEFORE the Grails filter
+    def getWebXmlFilterOrder(){
+        def FilterManager = getClass().getClassLoader().loadClass('grails.plugin.webxml.FilterManager')
+        [responseSizeCounting: FilterManager.GRAILS_WEB_REQUEST_POSITION - 100]
+    }
 
     def doWithWebDescriptor = { xml ->
         Boolean metricsEnabled = Boolean.parseBoolean(System.getProperty('metrics.enabled', 'false')) || application.config.metrics.enabled != false
@@ -64,6 +73,28 @@ http://metrics.codahale.com/index.html
             println("###################################")
         } else {
             println("#### YammerMetrics are DISABLED ####")
+        }
+
+        def filters = xml.filter
+        def filterMappings = xml.'filter-mapping'
+
+        def lastFilter = filters[filters.size() - 1]
+        def lastMapping = filterMappings[filterMappings.size() - 1]
+
+        // add the Counting filter
+        lastFilter + {
+            filter {
+                'filter-name'('responseSizeCounting')
+                'filter-class'(CountingFilter.name)
+            }
+        }
+
+        // add the Counting filter mapping
+        lastMapping + {
+            'filter-mapping' {
+                'filter-name'('responseSizeCounting')
+                'url-pattern'("/*")
+            }
         }
     }
 

@@ -5,9 +5,8 @@ import org.codehaus.groovy.reflection.ReflectionUtils
 
 import java.util.concurrent.TimeUnit
 
-class GroovierMetrics extends Metrics {
+class GroovierMetrics {//extends Metrics {
 
-    private GroovierMetrics() { super() }
 
     static com.yammer.metrics.core.Meter newMeter(String meterName){
         return newMeter(ReflectionUtils.getCallingClass(2), meterName, meterName, TimeUnit.SECONDS)

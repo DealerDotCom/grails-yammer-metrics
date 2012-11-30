@@ -59,6 +59,8 @@ grails.project.dependency.resolution = {
         build ':release:2.0.3', {
             export = false
         }
+
+        compile ":webxml:1.4.1"
     }
 
     dependencies {
