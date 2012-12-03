@@ -10,6 +10,7 @@ import com.yammer.metrics.core.MetricName
 import com.yammer.metrics.util.RatioGauge
 import org.apache.commons.logging.Log
 import org.apache.commons.logging.LogFactory
+import com.yammer.metrics.core.Counter
 
 class ContextualStopWatch implements StopWatch{
     private static final Log log = LogFactory.getLog(ContextualStopWatch)
@@ -60,6 +61,8 @@ class ContextualStopWatch implements StopWatch{
             Long contextTime = contextTimingInfo.getTotalTime()
             Timer contextTimer = getTimer()
             contextTimer.update(contextTime, TimeUnit.NANOSECONDS)
+            Counter contextTotal = getTotalCounter()
+            contextTotal.inc(contextTime)
 
             tasks.each {String taskName, TaskTimingInfo taskTimingInfo ->
                 Histogram ratioHistogram = getTaskTimingRatioHistogram(taskName)
@@ -68,6 +71,8 @@ class ContextualStopWatch implements StopWatch{
                 Meter taskMeter = getTaskMeter(taskName)
                 taskMeter.mark(taskTimingInfo.count)
                 makeTaskInvocationRatioGauge(taskName, contextTimer, taskMeter)
+                Counter taskTotal = getTaskTotalCounter(taskName)
+                taskTotal.inc(taskTimingInfo.getTotalTime())
             }
         } catch(Exception e){
             log?.error("Exception encountering when trying to execute finish() method with group: $group and type: $type:".toString(), e)
@@ -76,6 +81,10 @@ class ContextualStopWatch implements StopWatch{
 
     private Timer getTimer(){
         return Metrics.newTimer(makeMetricName('request'), TimeUnit.MILLISECONDS, TimeUnit.MINUTES) //TODO: make configurable
+    }
+
+    private Counter getTotalCounter(){
+        return Metrics.newCounter(makeMetricName('request.total')) //TODO: make configurable
     }
 
     private MetricName makeMetricName(String name){
@@ -92,6 +101,10 @@ class ContextualStopWatch implements StopWatch{
 
     private void makeTaskInvocationRatioGauge(String taskName, Timer ctxTimer, Meter taskMeter){
         Metrics.newGauge(makeMetricName([taskName, 'invocationRatio'].join('.')), new TaskInvocationRatio(ctxTimer, taskMeter)) //TODO: make configurable
+    }
+
+    private Counter getTaskTotalCounter(String taskName){
+        return Metrics.newCounter(makeMetricName([taskName, 'total'].join('.'))) //TODO: make configurable
     }
 
     private static class TaskInvocationRatio extends RatioGauge{

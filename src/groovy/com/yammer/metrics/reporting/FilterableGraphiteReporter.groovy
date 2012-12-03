@@ -247,6 +247,8 @@ class FilterableGraphiteReporter extends GraphiteReporter{
         sendToGraphite(timestamp, graphiteName, String.format(locale, "%s", value));
     }
 
+    private int lineCount = 0
+
     @Override
     protected void sendToGraphite(long timestamp, String name, String value){
         if(shouldSend(name)){
@@ -262,6 +264,7 @@ class FilterableGraphiteReporter extends GraphiteReporter{
                 writer.write(Long.toString(timestamp));
                 writer.write('\n');
                 writer.flush();
+                lineCount++
             } catch(IOException e){
                 LOG.error("Error sending to Graphite:", e);
             }
@@ -279,7 +282,10 @@ class FilterableGraphiteReporter extends GraphiteReporter{
     @Override
     void run(){
         if(isEnabled()){
+            lineCount = 0
             super.run()
+            if(LOG?.isTraceEnabled()){LOG.trace("Sent $lineCount lines to Graphite")}
+            lineCount = 0
         } else {
             if(LOG?.isTraceEnabled()){LOG.trace('Graphite Reporter is disabled - no data will be sent')}
         }

@@ -9,7 +9,7 @@ import java.io.OutputStream;
  */
 public class DelegatingServletOutputStream extends ServletOutputStream{
 
-    protected final OutputStream outputDelegate;
+    private final OutputStream outputDelegate;
 
     public DelegatingServletOutputStream(OutputStream delegate){
         this.outputDelegate = delegate;

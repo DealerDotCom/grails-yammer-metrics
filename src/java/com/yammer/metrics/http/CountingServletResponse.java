@@ -16,6 +16,6 @@ public class CountingServletResponse extends OutputDelegatingServletResponseWrap
 
     public long getByteCount() throws IOException{
         flushBuffer(); // Ensure that all bytes are written at this point.
-        return ((CountingOutputStream) (getOutputDelegate())).getByteCount();
+        return ((CountingOutputStream) (getOutputStream().getDelegate())).getByteCount();
     }
 }

@@ -26,21 +26,17 @@ public class OutputDelegatingServletResponseWrapper extends HttpServletResponseW
     }
 
     @Override
-    public ServletOutputStream getOutputStream() throws IOException{
+    public DelegatingServletOutputStream getOutputStream(){
         return output;
     }
 
     @Override
-    public PrintWriter getWriter() throws IOException{
+    public PrintWriter getWriter(){
         return writer;
     }
 
     @Override
     public void flushBuffer() throws IOException{
         writer.flush();
-    }
-
-    protected OutputStream getOutputDelegate(){
-        return output.getDelegate();
     }
 }
