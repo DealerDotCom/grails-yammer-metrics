@@ -10,7 +10,7 @@ import com.yammer.metrics.Metrics
 import org.apache.commons.logging.Log
 import org.apache.commons.logging.LogFactory
 
-import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
+import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH //TODO: Don't use this, it is deprecated
 import org.springframework.util.AntPathMatcher
 
 class FilterableGraphiteReporter extends GraphiteReporter{

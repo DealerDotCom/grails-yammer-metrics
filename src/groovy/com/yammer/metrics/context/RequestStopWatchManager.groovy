@@ -3,7 +3,11 @@ package com.yammer.metrics.context
 import org.codehaus.groovy.grails.commons.ConfigurationHolder as CH
 import org.apache.commons.logging.LogFactory
 import org.apache.commons.logging.Log
+import com.yammer.metrics.MetricsDictionary
 
+/**
+ * Request scoped bean that sets up and tears down the thread scoped stopWatchHolder used for grails request metrics.
+ */
 class RequestStopWatchManager implements Serializable{
     private static final Log log = LogFactory.getLog(RequestStopWatchManager)
 
@@ -12,7 +16,7 @@ class RequestStopWatchManager implements Serializable{
     void init(){
         try{
             if(CH?.config?.metrics?.requestProfiling?.enabled){
-                StopWatch requestStopWatch = new NestedContextualStopWatch()
+                StopWatch requestStopWatch = new NestedContextualStopWatch(MetricsDictionary.REQUEST_METRIC)
                 stopWatchHolder?.setStopWatch(requestStopWatch)
             }
         } catch(Exception e){

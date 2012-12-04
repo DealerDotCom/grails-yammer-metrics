@@ -11,19 +11,19 @@ import org.slf4j.LoggerFactory;
 import javax.servlet.*;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import static com.yammer.metrics.MetricsDictionary.*;
 
 /**
- * Source code based on:
+ * Filter that wraps the response in a CountingServletResponse so that the number of bytes written can be counted, then updates contextual
+ * response size metrics based on the byte count from the response.
+ *
+ * Logic to count response bytes based on:
  * url: http://stackoverflow.com/questions/3220820/how-to-insert-jsf-page-rendering-time-and-response-size-into-the-page-itself-at/3221516#3221516
  * date: 11/30/2012
  */
-public class CountingFilter implements Filter{
-    private static final Logger LOGGER = LoggerFactory.getLogger(CountingFilter.class);
-
-    public static final String METRICS_GROUP_REQUEST_ATTRIBUTE = "com.yammer.metrics.http.GROUP_REQUEST_ATTRIBUTE";
-    public static final String METRICS_TYPE_REQUEST_ATTRIBUTE = "com.yammer.metrics.http.TYPE_REQUEST_ATTRIBUTE";
-    public static final String RESPONSE_SIZE_METRIC_NAME = "responseSize";
-    public static final String RESPONSE_SIZE_TOTAL_METRIC_NAME = RESPONSE_SIZE_METRIC_NAME + ".total";
+public class ResponseSizeMetricsFilter implements Filter{
+    private static final Logger LOGGER = LoggerFactory.getLogger(ResponseSizeMetricsFilter.class);
+    public static final String DEFAULT_FILTER_NAME = "responseSizeMetricsFilter";
 
     @Override
     public void init(FilterConfig arg0) throws ServletException{
@@ -44,7 +44,7 @@ public class CountingFilter implements Filter{
             processResponseSizeMetric(request, counter);
         } catch(Exception e){
             //Log the exception but don't interrupt the request
-            LOGGER.error("Exception thrown while processing " + RESPONSE_SIZE_METRIC_NAME + " metric", e);
+            LOGGER.error("Exception thrown while processing " + RESPONSE_SIZE_METRIC + " metric", e);
         }
     }
 
@@ -53,9 +53,9 @@ public class CountingFilter implements Filter{
         String type = getAttributeValue(request, METRICS_TYPE_REQUEST_ATTRIBUTE);
         if(StringUtils.isNotBlank(group) && StringUtils.isNotBlank(type)){ // Update the response size metrics only if the request has the metrics group and type attributes
             long byteCount = counter.getByteCount();
-            Histogram responseSizeHistogram = Metrics.newHistogram(new MetricName(group, type, RESPONSE_SIZE_METRIC_NAME), true);
+            Histogram responseSizeHistogram = Metrics.newHistogram(new MetricName(group, type, RESPONSE_SIZE_METRIC), true);
             responseSizeHistogram.update(byteCount);
-            Counter responseSizeCounter = Metrics.newCounter(new MetricName(group, type, RESPONSE_SIZE_TOTAL_METRIC_NAME));
+            Counter responseSizeCounter = Metrics.newCounter(new MetricName(group, type, RESPONSE_SIZE_TOTAL_METRIC));
             responseSizeCounter.inc(byteCount);
 
         }

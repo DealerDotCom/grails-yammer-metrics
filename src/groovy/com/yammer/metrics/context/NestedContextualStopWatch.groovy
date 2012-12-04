@@ -1,19 +1,26 @@
 package com.yammer.metrics.context
 
+import com.yammer.metrics.MetricsDictionary
+
 class NestedContextualStopWatch implements StopWatch{
-    private static final String NESTED_CONTEXT_TASK_NAME = 'nested'
 
     private final Deque<ContextualStopWatch> contextStack = new ArrayDeque<ContextualStopWatch>()
 
+    private final String rootContext
+
+    NestedContextualStopWatch(String rootCtx){
+        this.rootContext = rootCtx
+    }
+
     void startContext(String group, String type){
-        contextStack.peek()?.start(NESTED_CONTEXT_TASK_NAME)
-        ContextualStopWatch ctx = new ContextualStopWatch(group, type)
+        contextStack.peek()?.start(MetricsDictionary.NESTED_CONTEXT_TASK_METRIC)
+        ContextualStopWatch ctx = new ContextualStopWatch(rootContext, group, type)
         contextStack.push(ctx)
     }
 
     void stopContext(){
         ContextualStopWatch ctx = contextStack.pop()
-        contextStack.peek()?.stop(NESTED_CONTEXT_TASK_NAME)
+        contextStack.peek()?.stop(MetricsDictionary.NESTED_CONTEXT_TASK_METRIC)
         ctx.finish()
     }
 

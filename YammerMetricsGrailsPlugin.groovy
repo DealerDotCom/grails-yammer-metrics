@@ -1,11 +1,11 @@
-import com.yammer.metrics.http.CountingFilter
+import com.yammer.metrics.http.ResponseSizeMetricsFilter
 /*
 * Copyright 2012 Jeff Ellis / Ellery Crane
 */
 class YammerMetricsGrailsPlugin{
 
     // the plugin version
-    def version = "2.1.2-4-DDC-BINARY"
+    def version = "2.1.2-5-DDC-BINARY"
     // the version or versions of Grails the plugin is designed for
     def grailsVersion = "2.1.1 > *"
     // the other plugins this plugin depends on
@@ -37,7 +37,7 @@ http://metrics.codahale.com/index.html
     // make sure the response size counting filter is BEFORE the Grails filter
     def getWebXmlFilterOrder(){
         def FilterManager = getClass().getClassLoader().loadClass('grails.plugin.webxml.FilterManager')
-        [responseSizeCounting: FilterManager.GRAILS_WEB_REQUEST_POSITION - 100]
+        [(ResponseSizeMetricsFilter.DEFAULT_FILTER_NAME): FilterManager.GRAILS_WEB_REQUEST_POSITION - 100]
     }
 
     def doWithWebDescriptor = { xml ->
@@ -81,18 +81,18 @@ http://metrics.codahale.com/index.html
         def lastFilter = filters[filters.size() - 1]
         def lastMapping = filterMappings[filterMappings.size() - 1]
 
-        // add the Counting filter
+        // add the response size metrics filter
         lastFilter + {
             filter {
-                'filter-name'('responseSizeCounting')
-                'filter-class'(CountingFilter.name)
+                'filter-name'(ResponseSizeMetricsFilter.DEFAULT_FILTER_NAME)
+                'filter-class'(ResponseSizeMetricsFilter.name)
             }
         }
 
-        // add the Counting filter mapping
+        // add the response size metrics filter mapping
         lastMapping + {
             'filter-mapping' {
-                'filter-name'('responseSizeCounting')
+                'filter-name'(ResponseSizeMetricsFilter.DEFAULT_FILTER_NAME)
                 'url-pattern'("/*")
             }
         }

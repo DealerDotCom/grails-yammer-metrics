@@ -11,6 +11,7 @@ import com.yammer.metrics.util.RatioGauge
 import org.apache.commons.logging.Log
 import org.apache.commons.logging.LogFactory
 import com.yammer.metrics.core.Counter
+import com.yammer.metrics.MetricsDictionary
 
 class ContextualStopWatch implements StopWatch{
     private static final Log log = LogFactory.getLog(ContextualStopWatch)
@@ -22,10 +23,12 @@ class ContextualStopWatch implements StopWatch{
     private final Clock clock
 
     private final Map<String, TaskTimingInfo> tasks
+    private final String rootContext
 
     TaskTimingInfo contextTimingInfo
 
-    ContextualStopWatch(String groupName, String typeName){
+    ContextualStopWatch(String rootContext, String groupName, String typeName){
+        this.rootContext = rootContext
         group = groupName ?: DEFAULT_GROUP_NAME
         type = typeName ?: DEFAULT_TYPE_NAME
         clock = Clock.defaultClock()
@@ -80,11 +83,11 @@ class ContextualStopWatch implements StopWatch{
     }
 
     private Timer getTimer(){
-        return Metrics.newTimer(makeMetricName('request'), TimeUnit.MILLISECONDS, TimeUnit.MINUTES) //TODO: make configurable
+        return Metrics.newTimer(makeMetricName(rootContext), TimeUnit.MILLISECONDS, TimeUnit.MINUTES)
     }
 
     private Counter getTotalCounter(){
-        return Metrics.newCounter(makeMetricName('request.total')) //TODO: make configurable
+        return Metrics.newCounter(makeMetricName([rootContext, MetricsDictionary.TOTAL_METRIC_SUFFIX].join('.')))
     }
 
     private MetricName makeMetricName(String name){
@@ -92,19 +95,19 @@ class ContextualStopWatch implements StopWatch{
     }
 
     private Histogram getTaskTimingRatioHistogram(String taskName){
-        return Metrics.newHistogram(makeMetricName([taskName, 'percentageOfTime'].join('.')), true) //TODO: make configurable
+        return Metrics.newHistogram(makeMetricName([taskName, MetricsDictionary.PERCENTAGE_OF_TIME_METRIC_SUFFIX].join('.')), true)
     }
 
     private Meter getTaskMeter(String taskName){
-        return Metrics.newMeter(makeMetricName(taskName), 'invocations', TimeUnit.MINUTES) //TODO: make configurable
+        return Metrics.newMeter(makeMetricName(taskName), MetricsDictionary.INVOCATIONS_METRIC_SUFFIX, TimeUnit.MINUTES)
     }
 
     private void makeTaskInvocationRatioGauge(String taskName, Timer ctxTimer, Meter taskMeter){
-        Metrics.newGauge(makeMetricName([taskName, 'invocationRatio'].join('.')), new TaskInvocationRatio(ctxTimer, taskMeter)) //TODO: make configurable
+        Metrics.newGauge(makeMetricName([taskName, MetricsDictionary.INVOCATION_RATIO_METRIC_SUFFIX].join('.')), new TaskInvocationRatio(ctxTimer, taskMeter))
     }
 
     private Counter getTaskTotalCounter(String taskName){
-        return Metrics.newCounter(makeMetricName([taskName, 'total'].join('.'))) //TODO: make configurable
+        return Metrics.newCounter(makeMetricName([taskName, MetricsDictionary.TOTAL_METRIC_SUFFIX].join('.')))
     }
 
     private static class TaskInvocationRatio extends RatioGauge{

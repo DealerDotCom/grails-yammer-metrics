@@ -1,5 +1,5 @@
 package com.yammer.metrics.http;
-import javax.servlet.ServletOutputStream;
+
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpServletResponseWrapper;
 import java.io.IOException;
